@@ -1,4 +1,4 @@
-name: Code Integration
+name: Commit Stage
 
 on: [push]
 

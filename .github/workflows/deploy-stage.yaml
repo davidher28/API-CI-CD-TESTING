@@ -1,8 +1,8 @@
-name: Publish and Deploy
+name: Deploy Stage
 
 on:
   workflow_run:
-    workflows: ["Code Integration"]
+    workflows: ["Commit Stage"]
     branches: [main]
     types: 
       - completed
