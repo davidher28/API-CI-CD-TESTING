@@ -1,4 +1,4 @@
-name: Publish Docker Image
+name: Docker Image Publishing
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     tags:
       - 'v*'
   workflow_run:
-    workflows: ["Integrate Code"]
+    workflows: ["Code Integration"]
     branches: [main]
     types: 
       - completed
