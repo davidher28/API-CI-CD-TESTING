@@ -1,4 +1,4 @@
-name: Integrate Code
+name: Code Integration
 
 on: [push]
 
