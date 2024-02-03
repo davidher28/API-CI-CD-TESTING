@@ -26,8 +26,7 @@ jobs:
           images: |
             ${{ secrets.DOCKERHUB_USERNAME }}/fastapi
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
+            type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
