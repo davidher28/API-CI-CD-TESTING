@@ -1,0 +1,48 @@
+name: Buiild, Test and Analyze
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.0
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.0"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test with pytest
+        run: |
+          pip install pytest
+          pip install -r requirements.txt
+          pytest
+
+  analyze:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint with Ruff
+        run: |
+          pip install ruff
+          ruff check .
+          ruff format .
+        continue-on-error: false
