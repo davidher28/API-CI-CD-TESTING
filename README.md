@@ -1,5 +1,6 @@
 Rest API based on the FastAPI framework
 
-// Configuraciones:
+// Config:
 - Main branch protection rules
 - Pull Requests protection rules
+- Delete branch after merge
