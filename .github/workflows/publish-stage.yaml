@@ -12,18 +12,35 @@ on:
     types: 
       - completed
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Docker Meta
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: name/app
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Login to Docker Hub
         if: github.event_name != 'pull_request'
