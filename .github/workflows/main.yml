@@ -24,9 +24,11 @@ jobs:
     steps:
       - name: Test with pytest
         run: pytest
+    needs: build
 
   analyze:
     runs-on: ubuntu-latest
     steps:
       - name: Lint with Ruff
         uses: chartboost/ruff-action@v1
+    needs: build
