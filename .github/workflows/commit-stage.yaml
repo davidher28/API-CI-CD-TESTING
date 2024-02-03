@@ -45,4 +45,3 @@ jobs:
           pip install ruff
           ruff check .
           ruff format .
-        continue-on-error: false
