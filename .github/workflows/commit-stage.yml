@@ -1,4 +1,4 @@
-name: Python package
+name: Buiild, Test and Analyze
 
 on: [push]
 
