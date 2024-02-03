@@ -1,4 +1,4 @@
-name: Buiild, Test and Analyze
+name: Integrate Code
 
 on: [push]
 
