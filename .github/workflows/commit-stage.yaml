@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
 
@@ -15,33 +15,29 @@ jobs:
           python-version: "3.12.0"
           cache: 'pip'
 
-      - name: Cache dependencies
+      - name: Install and cache dependencies
+        id: install-dependencies
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: pip-
-
-      - name: Install dependencies
-        id: install-dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: build
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore cache for dependencies
+      - name: Retrieve cached dependencies
+        id: install-dependencies
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-
-      - name: Install dependencies
-        id: install-dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -51,19 +47,17 @@ jobs:
         run: pytest
 
   analyze:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: build
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore cache for dependencies
+      - name: Retrieve cached dependencies
+        id: install-dependencies
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-
-      - name: Install dependencies
-        id: install-dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
