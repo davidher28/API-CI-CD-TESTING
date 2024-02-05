@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-20.04.6
     steps:
       - uses: actions/checkout@v4
 
@@ -22,12 +22,12 @@ jobs:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: pip-
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-20.04.6
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
@@ -47,7 +47,7 @@ jobs:
         run: pytest
 
   analyze:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-20.04.6
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
