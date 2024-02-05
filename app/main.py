@@ -8,5 +8,6 @@ def hello_world() -> str:
 
 
 @app.get("/")
-async def read_main() -> dict[str, str]:
-    return {"message": hello_world()}
+async def read_main() -> dict:
+    message: str = hello_world()
+    return {"message": message}
