@@ -59,7 +59,7 @@ jobs:
           aws-region: eu-west-1
 
       - name: Update kube config
-        run: aws eks update-kubeconfig --name eksctl-attractive-rainbow-1707191033 --region eu-west-1
+        run: aws eks update-kubeconfig --name attractive-rainbow-1707191033 --region eu-west-1
 
       - name: Deploy to EKS
         env:
