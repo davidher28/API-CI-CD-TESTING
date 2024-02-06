@@ -15,12 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract Docker metadata
-        id: metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi
-
       - name: Bump Version and Push Tag
         id: tagging
         uses: mathieudutour/github-tag-action@v6.1
@@ -44,13 +38,14 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.tagging.outputs.new_tag }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi:${{ steps.tagging.outputs.new_tag }}
 
       - name: Create a GitHub Release
+        id: create_release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.tagging.outputs.new_tag }}
           name: Release ${{ steps.tagging.outputs.new_tag }}
+          tag: ${{ steps.tagging.outputs.new_tag }}
           body: ${{ steps.tagging.outputs.changelog }}
 
       - name: Docker Image digest
