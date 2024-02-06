@@ -4,7 +4,6 @@ app = FastAPI()
 
 
 def hello_world() -> str:
-    """Returns a simple message."""
     return "Hello World!"
 
 
