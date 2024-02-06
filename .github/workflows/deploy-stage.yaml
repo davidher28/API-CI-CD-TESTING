@@ -61,11 +61,10 @@ jobs:
       - name: Update kube config
         run: aws eks update-kubeconfig --name attractive-rainbow-1707191033 --region eu-west-1
 
-      - name: Deploy to EKS
+      - name: Deploy to AWS Elastic Kubernetes Service (EKS)
         env:
           IMAGE_REPOSITORY: ${{ secrets.DOCKERHUB_USERNAME }}
           IMAGE_TAG: ${{ steps.tagging.outputs.new_tag }}
         run: |
-          sed -i "s|DOCKER_IMAGE|$IMAGE_REPOSITORY/fastapi:$IMAGE_TAG|g" ./kubernetes/manifests/deployment.yaml && \
-          kubectl apply -f ./kubernetes/manifests/deployment.yaml
-          kubectl apply -f ./kubernetes/manifests/service.yaml
+          sed -i "s|DOCKER_IMAGE|$IMAGE_REPOSITORY/fastapi:$IMAGE_TAG|g" ./kubernetes/deployment.yaml && \
+          kubectl apply -f ./kubernetes/deployment.yaml
