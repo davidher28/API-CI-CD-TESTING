@@ -18,8 +18,9 @@ jobs:
       - name: Bump Version and Push Tag
         id: tagging
         uses: anothrNick/github-tag-action@1.64.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
 
       - name: Login to Docker Hub
         id: login
