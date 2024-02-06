@@ -32,7 +32,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push to Docker Hub
+      - name: Build and Push Image to Docker Hub
         id: docker_build
         uses: docker/build-push-action@v5
         with:
@@ -41,16 +41,15 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi:${{ steps.tagging.outputs.new_tag }}
 
+      - name: Docker Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
       - name: Create a GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1
         with:
           name: Release ${{ steps.tagging.outputs.new_tag }}
           tag: ${{ steps.tagging.outputs.new_tag }}
-          body: ${{ steps.tagging.outputs.changelog }}
-
-      - name: Docker Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
 
   deploy:
     runs-on: ubuntu-22.04
