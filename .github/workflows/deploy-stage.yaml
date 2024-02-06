@@ -41,10 +41,11 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi:${{ steps.tagging.outputs.new_tag }}
 
       - name: Create a GitHub Release
+        id: create_release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.tagging.outputs.new_tag }}
           name: Release ${{ steps.tagging.outputs.new_tag }}
+          tag: ${{ steps.tagging.outputs.new_tag }}
           body: ${{ steps.tagging.outputs.changelog }}
 
       - name: Docker Image digest
