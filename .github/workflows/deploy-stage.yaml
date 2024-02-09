@@ -73,9 +73,12 @@ jobs:
       - name: Create and expose app
         id: deploy-and-expose
         uses: redhat-actions/oc-new-app@v1
+        env:
+          IMAGE_REPOSITORY: ${{ vars.DOCKERHUB_USERNAME }}
+          IMAGE_TAG: ${{ steps.tagging.outputs.new_tag }}
         with:
           app_name: ${{ env.APP_NAME }}
-          image: "$IMAGE_REPOSITORY/fastapi:$IMAGE_TAG"
+          image: $IMAGE_REPOSITORY/fastapi:$IMAGE_TAG
           namespace: ${{ env.OPENSHIFT_NAMESPACE }}
           port: ${{ env.APP_PORT }}
 
