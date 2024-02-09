@@ -4,6 +4,8 @@ on:
   workflow_run:
     workflows:
       - 'Commit Stage'
+    # branches:
+    #  - main
     types:
       - completed
 
