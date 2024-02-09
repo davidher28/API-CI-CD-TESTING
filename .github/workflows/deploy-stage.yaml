@@ -14,7 +14,7 @@ on: [push]
 
 env:
   APP_NAME: hello-world
-  APP_PORT: 80
+  APP_PORT: 8080
   OPENSHIFT_NAMESPACE: davidher28-dev
 
 jobs:
