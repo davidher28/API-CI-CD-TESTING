@@ -78,7 +78,7 @@ jobs:
           IMAGE_TAG: ${{ steps.tagging.outputs.new_tag }}
         with:
           app_name: ${{ env.APP_NAME }}
-          image: $IMAGE_REPOSITORY/fastapi:$IMAGE_TAG
+          image: davidher28/fastapi:v5.6.0
           namespace: ${{ env.OPENSHIFT_NAMESPACE }}
           port: ${{ env.APP_PORT }}
 
