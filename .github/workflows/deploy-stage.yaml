@@ -74,6 +74,5 @@ jobs:
           IMAGE_TAG: ${{ steps.tagging.outputs.new_tag }}
         run: |
           sed -i "s|$DOCKER_IMAGE|$IMAGE_REPOSITORY/fastapi:$IMAGE_TAG|g" ./kubernetes/deployment.yaml && \
-          oc apply -f ./kubernetes/deployment.yaml
+          oc create -f ./kubernetes/deployment.yaml
           oc apply -f ./kubernetes/service.yaml
-          oc expose service hello-world
