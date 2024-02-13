@@ -61,6 +61,7 @@ jobs:
         with:
           name: Release ${{ steps.tagging.outputs.new_tag }}
           tag: ${{ steps.tagging.outputs.new_tag }}
+          allowUpdates: true
 
       # ------------------------------- Red Hat OpenShift Deployment ------------------------------- #
       - name: Log in to OpenShift
