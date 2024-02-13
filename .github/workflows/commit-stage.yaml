@@ -38,14 +38,14 @@ jobs:
       - uses: actions/checkout@v4
 
       # ------------------------------- Unit Tests ------------------------------- #
-      - name: Restore cached dependencies
+      - name: Restore cache from the build stage
         id: restore-cache
         uses: actions/cache/restore@v3
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Restore cached dependencies
+      - name: Install cached dependencies
         id: restore-dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -63,14 +63,14 @@ jobs:
       - uses: actions/checkout@v4
 
       # ------------------------------- Static Analysis ------------------------------- #
-      - name: Restore cached dependencies
+      - name: Restore cache from the build stage
         id: restore-cache
         uses: actions/cache/restore@v3
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Restore cached dependencies
+      - name: Install cached dependencies
         id: restore-dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
