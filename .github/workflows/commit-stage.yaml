@@ -51,11 +51,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Unit Testing with pytest
-        id: test
+        id: unit_test
         run: pytest app/tests/services/
 
       - name: Integration Testing with pytest
-        id: test
+        id: integration_test
         if: branch == 'main'
         run: pytest app/tests/integration/
 
