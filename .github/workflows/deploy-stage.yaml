@@ -14,11 +14,22 @@ jobs:
       - uses: actions/checkout@v4
 
       # ------------------------------- Integration Tests ------------------------------- #
-      - name: Install dependencies
-        id: install-dependencies
-        run: pip install -r requirements.txt
+      - name: Restore cache
+        id: restore-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Integration Testing with pytest
+      - name: Restore cached dependencies
+        id: restore-dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ------------------------------- Integration Testing with pytest ------------------------------- #
+      - name: Run Integration Tests with pytest
         run: pytest app/tests/integration/
 
   publish:
