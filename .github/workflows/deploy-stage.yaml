@@ -99,7 +99,7 @@ jobs:
       # ------------------------------- Deployment Test ------------------------------- #
       - name: Test project is deployed
         id: test_deploy
-        uses: nick-invision/retry@v2.2.0
+        uses: nick-invision/retry@v3
         with:
           timeout_seconds: 3
           retry_wait_seconds: 10
