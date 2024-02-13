@@ -1,5 +1,4 @@
 from fastapi.testclient import TestClient
-from httpx import Response
 
 from app.main import app
 
@@ -10,7 +9,7 @@ def test_hello_world_endpoint():
     expected: dict = {"message": "Hello World!"}
 
     # Act
-    response: Response = client.get("/")
+    response = client.get("/")
 
     # Assert
     assert response.status_code == 200

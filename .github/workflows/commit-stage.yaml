@@ -50,9 +50,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Test with pytest
+      - name: Unit Testing with pytest
         id: test
-        run: pytest
+        run: pytest app/tests/services/
+
+      - name: Integration Testing with pytest
+        id: test
+        if: branch == 'main'
+        run: pytest app/tests/integration/
 
   analyze:
     runs-on: ubuntu-22.04
