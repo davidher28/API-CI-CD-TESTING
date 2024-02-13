@@ -96,7 +96,7 @@ jobs:
           echo "It can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
 
       # ------------------------------- Deployment Test ------------------------------- #
-      - name: Test project is deployed
+      - name: Test application deployment
         id: test_deploy
         uses: nick-invision/retry@v3
         with:
