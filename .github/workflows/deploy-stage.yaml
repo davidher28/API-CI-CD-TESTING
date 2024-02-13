@@ -90,11 +90,11 @@ jobs:
           SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
         run: |
           [[ -n ${{ env.ROUTE }} ]] || (echo "Determining application route failed in previous step"; exit 1)
-          echo "======================== Your application is available at: ========================"
+          echo "======================== The application is available at: ========================"
           echo ${{ env.ROUTE }}
           echo "==================================================================================="
           echo
-          echo "Your app can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
+          echo "It can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
 
       # ------------------------------- Deployment Test ------------------------------- #
       - name: Test project is deployed
