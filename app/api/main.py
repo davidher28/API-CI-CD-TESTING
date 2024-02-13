@@ -1,10 +1,8 @@
 from fastapi import FastAPI
 
+from app.services.hello_world import hello_world
+
 app = FastAPI()
-
-
-def hello_world() -> str:
-    return "Hello World!"
 
 
 @app.get("/")
