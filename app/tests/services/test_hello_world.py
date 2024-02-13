@@ -10,4 +10,4 @@ def test_hello_world():
 
     # Assert
     assert response == expected
-    assert isinstance(response) == isinstance(expected) == str
+    assert isinstance(response, str) == isinstance(expected, str)

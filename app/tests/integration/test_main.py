@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from httpx import Response
 
-from app.api.main import app
+from app.main import app
 
 
 def test_hello_world_endpoint():
@@ -15,4 +15,4 @@ def test_hello_world_endpoint():
     # Assert
     assert response.status_code == 200
     assert response.json() == expected
-    assert isinstance(response.json()) == isinstance(expected) == dict
+    assert isinstance(response.json(), dict) == isinstance(expected, dict)
