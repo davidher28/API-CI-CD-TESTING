@@ -4,7 +4,7 @@ app = FastAPI()
 
 
 def hello_world() -> str:
-    return "Hello Barcelona!"
+    return "Hello World!"
 
 
 @app.get("/")

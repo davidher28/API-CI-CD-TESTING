@@ -5,7 +5,7 @@ from .main import app, hello_world
 
 def test_hello_world():
     # Arrange
-    expected = "Hello Barcelona!"
+    expected = "Hello World!"
 
     # Act
     response = hello_world()
@@ -17,7 +17,7 @@ def test_hello_world():
 def test_hello_world_endpoint():
     # Arrange
     client = TestClient(app)
-    expected = {"message": "Hello Barcelona!"}
+    expected = {"message": "Hello World!"}
 
     # Act
     response = client.get("/")
