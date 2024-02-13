@@ -1,6 +1,13 @@
 name: Deploy Stage
 
-on: push
+on:
+ workflow_run:
+   workflows:
+     - 'Commit Stage'
+   branches:
+     - main
+   types:
+     - completed
 
 env:
   APP_NAME: hello-world
