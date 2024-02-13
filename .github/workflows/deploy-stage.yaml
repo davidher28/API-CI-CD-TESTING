@@ -79,7 +79,7 @@ jobs:
           IMAGE_TAG: ${{ steps.tagging.outputs.new_tag }}
         with:
           app_name: ${{ env.APP_NAME }}
-          image: docker.io/davidher28/fastapi:v5.6.0
+          image: docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ steps.tagging.outputs.new_tag }}
           namespace: ${{ env.OPENSHIFT_NAMESPACE }}
           port: ${{ env.APP_PORT }}
 
