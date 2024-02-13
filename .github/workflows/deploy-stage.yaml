@@ -1,15 +1,13 @@
 name: Deploy Stage
 
-on: [push]
-
-#on:
-#  workflow_run:
-#    workflows:
-#      - 'Commit Stage'
-#    branches:
-#      - main
-#    types:
-#      - completed
+on:
+ workflow_run:
+   workflows:
+     - 'Commit Stage'
+   branches:
+     - main
+   types:
+     - completed
 
 
 env:
@@ -85,6 +83,7 @@ jobs:
           port: ${{ env.APP_PORT }}
 
       - name: View application route
+        id: view_application_route
         env:
           ROUTE: ${{ steps.deploy-and-expose.outputs.route }}
           SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
