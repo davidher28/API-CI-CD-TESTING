@@ -10,7 +10,6 @@ env:
 jobs:
   integration_test:
     runs-on: ubuntu-22.04
-    needs: build
     steps:
       - uses: actions/checkout@v4
 
