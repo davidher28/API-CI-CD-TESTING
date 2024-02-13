@@ -14,7 +14,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12.1'
-          cache: pip
 
       - name: Set up cache
         id: setup-cache
@@ -22,7 +21,9 @@ jobs:
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: pip-
+          restore-keys: |
+            pip-${{ hashFiles('**/requirements.txt') }}
+            pip-
 
       - name: Install dependencies
         id: install-dependencies
@@ -36,23 +37,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ------------------------------- Perform Unit Tests ------------------------------- #
-      - name: Restore cache
+      # ------------------------------- Unit Tests ------------------------------- #
+      - name: Restore cache from the build stage
         id: restore-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: pip-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Restore cached dependencies
+      - name: Install cached dependencies
         id: restore-dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Test with pytest
-        id: test
-        run: pytest
+      - name: Unit Testing with pytest
+        id: unit_test
+        run: pytest app/tests/services/
 
   analyze:
     runs-on: ubuntu-22.04
@@ -60,16 +62,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ------------------------------- Perform Static Analysis ------------------------------- #
-      - name: Restore cache
+      # ------------------------------- Static Analysis ------------------------------- #
+      - name: Restore cache from the build stage
         id: restore-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: pip-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Restore cached dependencies
+      - name: Install cached dependencies
         id: restore-dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt

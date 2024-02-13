@@ -1,14 +1,6 @@
 name: Deploy Stage
 
-on:
- workflow_run:
-   workflows:
-     - 'Commit Stage'
-   branches:
-     - main
-   types:
-     - completed
-
+on: push
 
 env:
   APP_NAME: hello-world
@@ -16,8 +8,32 @@ env:
   OPENSHIFT_NAMESPACE: davidher28-dev
 
 jobs:
+  integration_test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # ------------------------------- Integration Tests ------------------------------- #
+      - name: Restore cache from the build stage
+        id: restore-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Install cached dependencies
+        id: restore-dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Integration Tests with pytest
+        run: pytest app/tests/integration/
+
   publish:
     runs-on: ubuntu-22.04
+    needs: integration_test
     steps:
       - uses: actions/checkout@v4
 
