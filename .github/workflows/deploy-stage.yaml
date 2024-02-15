@@ -1,13 +1,9 @@
 name: Deploy Stage
 
 on:
- workflow_run:
-   workflows:
-     - 'Commit Stage'
-   branches:
-     - main
-   types:
-     - completed
+  push:
+    branches:
+      - main
 
 env:
   APP_NAME: hello-world
@@ -15,8 +11,16 @@ env:
   OPENSHIFT_NAMESPACE: davidher28-dev
 
 jobs:
+  commit_stage:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Reuse the build action
+        id: commit-stage
+        uses: ./.github/workflows/commit-stage.yaml
+
   integration_test:
     runs-on: ubuntu-22.04
+    needs: commit_stage
     steps:
       - uses: actions/checkout@v4
 
