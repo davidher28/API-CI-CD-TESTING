@@ -2,8 +2,9 @@ name: Commit Stage
 
 on:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - '*'
+      - '!master'
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
