@@ -3,7 +3,7 @@ name: Commit Stage
 on: [push]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: environment-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
