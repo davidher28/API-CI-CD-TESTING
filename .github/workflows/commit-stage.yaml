@@ -1,6 +1,9 @@
 name: Commit Stage
 
-on: [pull_request]
+on:
+  push:
+    branches-ignore:
+      - master
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
