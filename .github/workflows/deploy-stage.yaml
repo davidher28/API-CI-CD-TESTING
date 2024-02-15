@@ -1,9 +1,11 @@
 name: Deploy Stage
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+    types:
+      - closed
 
 env:
   APP_NAME: hello-world
@@ -30,7 +32,7 @@ jobs:
       # ------------------------------- Integration Tests ------------------------------- #
       - name: Restore cache from the build stage
         id: restore-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('**/requirements.txt') }}
