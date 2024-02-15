@@ -3,7 +3,7 @@ name: Commit Stage
 on:
   push:
     branches-ignore:
-      - master
+      - main
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
