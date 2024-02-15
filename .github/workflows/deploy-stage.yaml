@@ -20,6 +20,7 @@ jobs:
 
   integration_test:
     runs-on: ubuntu-22.04
+    needs: commit_stage
     steps:
       - uses: actions/checkout@v4
 
