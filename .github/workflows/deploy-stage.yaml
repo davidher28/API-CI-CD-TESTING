@@ -64,7 +64,7 @@ jobs:
         with:
           image: ${{ vars.DOCKERHUB_USERNAME }}/fastapi
           tags: ${{ steps.tagging.outputs.new_tag }}
-          containerfiles: ./Dockerfile
+          containerfiles: ./docker/Dockerfile
 
       - name: Push To docker.io
         id: push-to-docker
