@@ -111,7 +111,7 @@ jobs:
           oc delete all --selector="app=$BLUE_APP_NAME"
           oc new-app "$CURRENT_IMAGE" --name="$BLUE_APP_NAME"
 
-          oc delete route ${{ env.APP_NAME }}
+          oc delete route ${{ env.APP_NAME }} --ignore-not-found=true
           oc expose svc/$GREEN_APP_NAME --name=${{ env.APP_NAME }}
           oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":"$BLUE_APP_NAME"}}}'
 
