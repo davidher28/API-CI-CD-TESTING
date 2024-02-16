@@ -93,21 +93,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to OpenShift
-        id: oc_login
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
-
       - name: Deploy and expose app
         id: deploy-and-expose
         run: |
-          oc new-app --name=${{ env.APP_NAME }}-blue docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
+          export SELECTOR="app=${{ env.APP_NAME }}-blue"
 
-          export SELECTOR="app=${{ env.APP_NAME }}"
-          echo "SELECTOR=$SELECTOR" >> $GITHUB_OUTPUT
+          oc delete all --selector="$SELECTOR"
+          oc new-app --name="$SELECTOR" --docker-image="" -n ${{ env.OPENSHIFT_NAMESPACE }}
 
   green-deployment:
     runs-on: ubuntu-22.04
@@ -118,22 +111,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to OpenShift
-        id: oc_login
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
-
       - name: Deploy and expose app
         id: deploy-and-expose
         run: |
-          oc new-app --name=${{ env.APP_NAME }}-green docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.new_tag }} -n ${{ env.OPENSHIFT_NAMESPACE }}
-          oc expose svc/${{ env.APP_NAME }} --port=${{ env.APP_PORT }} -n ${{ env.OPENSHIFT_NAMESPACE }}
-
-          export SELECTOR="app=${{ env.APP_NAME }}"
+          export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
+          export SELECTOR="app=${{ env.APP_NAME }}-green"
           echo "SELECTOR=$SELECTOR" >> $GITHUB_OUTPUT
+
+          oc delete all --selector="$SELECTOR"
+          oc expose svc/${{ env.APP_NAME }} --port=${{ env.APP_PORT }} -n ${{ env.OPENSHIFT_NAMESPACE }}
 
           export ROUTE=$(oc get route -n ${{ env.OPENSHIFT_NAMESPACE }} -l $SELECTOR -o jsonpath='{.items[0].spec.host}')
           echo "ROUTE=$ROUTE" >> $GITHUB_OUTPUT
