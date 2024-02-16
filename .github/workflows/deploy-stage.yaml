@@ -21,7 +21,7 @@ jobs:
       # ------------------------------- Commit Stage ------------------------------- #
       - name: Commit Stage
         id: commit-stage
-        uses: ./.github/actions/commit-stage-action
+        uses: davidher28/example-repo/.github/workflows/commit-stage.yaml@main
 
   integration_test:
     runs-on: ubuntu-22.04
