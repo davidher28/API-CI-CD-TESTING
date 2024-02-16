@@ -8,7 +8,6 @@ on:
 
 env:
   APP_NAME: hello-world
-  APP_PORT: 8080
   OPENSHIFT_NAMESPACE: davidher28-dev
 
 jobs:
@@ -53,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Bump Application Version and Push Tag
+      - name: Bump Application Version
         id: tagging
         uses: anothrNick/github-tag-action@1.64.0
         env:
@@ -61,33 +60,32 @@ jobs:
           WITH_V: true
           DRY_RUN: true
 
-      - name: Login to Docker Hub
-        id: docker_login
-        uses: docker/login-action@v3
+      - name: Buildah Action
+        id: build-image
+        uses: redhat-actions/buildah-build@v2.12
         with:
+          image: ${{ vars.DOCKERHUB_USERNAME }}/fastapi
+          tags: ${{ steps.tagging.outputs.new_tag }}
+          containerfiles: ./docker/Dockerfile
+
+      - name: Push To Docker Hub
+        id: push-to-docker
+        uses: redhat-actions/push-to-registry@v2.7.1
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: docker.io
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Print image url
+        run: echo "Image pushed to ${{ steps.push-to-docker.outputs.registry-paths }}"
 
-      - name: Build and Push Image to Docker Hub
-        id: docker_build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ steps.tagging.outputs.new_tag }}
-
-      - name: Docker Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
-
-  # ------------------------------- Red Hat OpenShift Green Deployment ------------------------------- #
-  blue-deployment:
+  # ------------------------------- Red Hat OpenShift Blue/Green Deployment ------------------------------- #
+  deployment:
     runs-on: ubuntu-22.04
     needs: publish
-    name: Deploy Blue Container
+    name: Deploy Blue & Green Instances
     outputs:
       route: ${{ steps.deploy-and-expose.outputs.route }}
     steps:
@@ -95,7 +93,7 @@ jobs:
 
       - name: Log in to OpenShift
         id: oc_login
-        uses: redhat-actions/oc-login@v1
+        uses: redhat-actions/oc-login@v1.2
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
@@ -104,56 +102,33 @@ jobs:
       - name: Deploy and expose app
         id: deploy-and-expose
         run: |
-          oc new-app --name=${{ env.APP_NAME }}-blue docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          export PREVIOUS_IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
+          export CURRENT_IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.new_tag }}"
 
-          export SELECTOR="app=${{ env.APP_NAME }}"
-          echo "SELECTOR=$SELECTOR" >> $GITHUB_OUTPUT
+          export GREEN_APP_NAME="${{ env.APP_NAME }}-green"
+          export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
 
-  green-deployment:
-    runs-on: ubuntu-22.04
-    needs: publish
-    name: Deploy Green Container
-    outputs:
-      route: ${{ steps.deploy-and-expose.outputs.route }}
-    steps:
-      - uses: actions/checkout@v4
+          set -x
+          # Deploy the new version of the app - Green
+          oc delete all --selector="app=$GREEN_APP_NAME"
+          oc new-app "$PREVIOUS_IMAGE" --name="$GREEN_APP_NAME"
 
-      - name: Log in to OpenShift
-        id: oc_login
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+          # Deploy the previous version of the app - Blue
+          oc delete all --selector="app=$BLUE_APP_NAME"
+          oc new-app "$CURRENT_IMAGE" --name="$BLUE_APP_NAME"
 
-      - name: Deploy and expose app
-        id: deploy-and-expose
-        run: |
-          oc new-app --name=${{ env.APP_NAME }}-green docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.new_tag }} -n ${{ env.OPENSHIFT_NAMESPACE }}
-          oc expose svc/${{ env.APP_NAME }} --port=${{ env.APP_PORT }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          # Expose the new version of the app by patching the route
+          oc delete route ${{ env.APP_NAME }} --ignore-not-found=true
+          oc expose svc/$BLUE_APP_NAME --name=${{ env.APP_NAME }}
+          oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":"'"${GREEN_APP_NAME}"'"}}}'
+          set +x
 
-          export SELECTOR="app=${{ env.APP_NAME }}"
-          echo "SELECTOR=$SELECTOR" >> $GITHUB_OUTPUT
-
-          export ROUTE=$(oc get route -n ${{ env.OPENSHIFT_NAMESPACE }} -l $SELECTOR -o jsonpath='{.items[0].spec.host}')
-          echo "ROUTE=$ROUTE" >> $GITHUB_OUTPUT
-
-      - name: View application route
-        id: view_application_route
-        env:
-          ROUTE: ${{ steps.deploy-and-expose.outputs.route }}
-          SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
-        run: |
-          [[ -n ${{ env.ROUTE }} ]] || (echo "Determining application route failed in previous step"; exit 1)
-          echo "======================== The application is available at: ========================"
-          echo ${{ env.ROUTE }}
-          echo "==================================================================================="
-          echo
-          echo "It can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
+          export ROUTE="$(oc get route ${{ env.APP_NAME }} -o jsonpath='{.spec.host}')"
+          echo "route=$ROUTE" >> "$GITHUB_OUTPUT"
 
   deployment_test:
     runs-on: ubuntu-22.04
-    needs: green-deployment
+    needs: deployment
     name: Deployment Test
     steps:
       - uses: actions/checkout@v4
