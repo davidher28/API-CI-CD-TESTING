@@ -1,11 +1,11 @@
 name: Commit Stage
 
 on:
-  workflow_call:
   push:
     branches:
       - '*'
       - '!master'
+  workflow_call:
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}

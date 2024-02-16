@@ -14,14 +14,8 @@ env:
 
 jobs:
   commit_stage:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      # ------------------------------- Commit Stage ------------------------------- #
-      - name: Commit Stage
-        id: commit-stage
-        uses: ./.github/workflows/commit-stage.yaml@main
+    # ------------------------------- Commit Stage ------------------------------- #
+    uses: ./.github/workflows/commit-stage.yaml
 
   integration_test:
     runs-on: ubuntu-22.04
