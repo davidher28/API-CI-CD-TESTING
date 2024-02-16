@@ -1,11 +1,13 @@
 name: Deploy Stage
 run-name: Deploy Stage - ${{ github.ref }}
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 env:
   APP_NAME: hello-world
-  APP_PORT: 8080
   OPENSHIFT_NAMESPACE: davidher28-dev
 
 jobs:
@@ -107,15 +109,15 @@ jobs:
           export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
 
           set -x
-          # Deploy the new version of the app
+          # Deploy the new version of the app - Green
           oc delete all --selector="app=$GREEN_APP_NAME"
           oc new-app "$PREVIOUS_IMAGE" --name="$GREEN_APP_NAME"
 
-          # Deploy the previous version of the app
+          # Deploy the previous version of the app - Blue
           oc delete all --selector="app=$BLUE_APP_NAME"
           oc new-app "$CURRENT_IMAGE" --name="$BLUE_APP_NAME"
 
-          # Expose the new version of the app
+          # Expose the new version of the app by patching the route
           oc delete route ${{ env.APP_NAME }} --ignore-not-found=true
           oc expose svc/$BLUE_APP_NAME --name=${{ env.APP_NAME }}
           oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":"'"${GREEN_APP_NAME}"'"}}}'
