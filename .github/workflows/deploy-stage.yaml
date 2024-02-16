@@ -86,8 +86,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: publish
     name: Deploy Blue & Green Instances
-    outputs:
-      route: ${{ steps.deploy-and-expose.outputs.route }}
     steps:
       - uses: actions/checkout@v4
 
@@ -99,32 +97,36 @@ jobs:
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
           namespace: ${{ env.OPENSHIFT_NAMESPACE }}
 
-      - name: Deploy and expose app
-        id: deploy-and-expose
+      - name: Deploy Green Instance
+        id: deploy-green
         run: |
-          export PREVIOUS_IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
+          export GREEN_APP_NAME="${{ env.APP_NAME }}-green"
           export CURRENT_IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.new_tag }}"
 
+          oc delete all --selector="app=$GREEN_APP_NAME"
+          oc new-app "$CURRENT_IMAGE" --name="$GREEN_APP_NAME"
+
+      - name: Deploy Blue Instance
+        id: deploy-blue
+        run: |
+          export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
+          export PREVIOUS_IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
+
+          oc delete all --selector="app=$BLUE_APP_NAME"
+          oc new-app "$PREVIOUS_IMAGE" --name="$BLUE_APP_NAME"
+
+      - name: Expose app
+        id: expose-app
+        run: |
           export GREEN_APP_NAME="${{ env.APP_NAME }}-green"
           export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
 
-          set -x
-          # Deploy the new version of the app - Green
-          oc delete all --selector="app=$GREEN_APP_NAME"
-          oc new-app "$PREVIOUS_IMAGE" --name="$GREEN_APP_NAME"
-
-          # Deploy the previous version of the app - Blue
-          oc delete all --selector="app=$BLUE_APP_NAME"
-          oc new-app "$CURRENT_IMAGE" --name="$BLUE_APP_NAME"
-
           # Expose the new version of the app by patching the route
+          set -x
           oc delete route ${{ env.APP_NAME }} --ignore-not-found=true
           oc expose svc/$BLUE_APP_NAME --name=${{ env.APP_NAME }}
           oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":"'"${GREEN_APP_NAME}"'"}}}'
           set +x
-
-          export ROUTE="$(oc get route ${{ env.APP_NAME }} -o jsonpath='{.spec.host}')"
-          echo "route=$ROUTE" >> "$GITHUB_OUTPUT"
 
   deployment_test:
     runs-on: ubuntu-22.04
@@ -142,4 +144,4 @@ jobs:
           retry_wait_seconds: 10
           max_attempts: 30
           warning_on_retry: false
-          command: curl -sSfL ${{ needs.deployment.outputs.route }}
+          command: curl -sSfL $(oc get route ${{ env.APP_NAME }} -o jsonpath='{.spec.host}')
