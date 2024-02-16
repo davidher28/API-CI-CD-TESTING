@@ -1,4 +1,5 @@
 name: Deploy Stage
+run-name: Deploy Stage
 
 on:
   pull_request:
