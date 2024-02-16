@@ -6,9 +6,10 @@ on:
     branches:
       - '*'
       - '!main'
-  # Allow reusability of the workflow when merging pull requests
   workflow_call:
+    # Allows for workflow reusability
 
+# Avoids running the same workflow concurrently on the same branch
 concurrency:
   group: ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true

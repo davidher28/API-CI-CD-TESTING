@@ -58,6 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
+          DRY_RUN: true
 
       # ------------------------------- Docker Build and Push ------------------------------- #
       - name: Login to Docker Hub
@@ -81,15 +82,6 @@ jobs:
 
       - name: Docker Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
-
-      # ------------------------------- GitHub Release ------------------------------- #
-      - name: Create a GitHub Release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        with:
-          name: Release ${{ steps.tagging.outputs.new_tag }}
-          tag: ${{ steps.tagging.outputs.new_tag }}
-          allowUpdates: true
 
       # ------------------------------- Red Hat OpenShift Deployment ------------------------------- #
       - name: Log in to OpenShift
@@ -135,10 +127,10 @@ jobs:
       # ------------------------------- Deployment Test ------------------------------- #
       - name: Test application deployment
         id: test_deploy
-        uses: nick-invision/retry@v3
+        uses: nick-fields/retry@v3
         with:
           timeout_seconds: 3
           retry_wait_seconds: 10
           max_attempts: 30
           warning_on_retry: false
-          command: curl -sSfLi ${{ needs.publish.outputs.route }}
+          command: curl -sSfL ${{ needs.publish.outputs.route }}
