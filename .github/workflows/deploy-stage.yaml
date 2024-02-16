@@ -1,5 +1,5 @@
 name: Deploy Stage
-run-name: Deploy Stage - ${{ github.ref_name }}
+run-name: Deploy Stage - ${{ github.ref }}
 
 on:
   pull_request:
