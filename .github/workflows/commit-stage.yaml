@@ -1,3 +1,4 @@
+name: Commit Stage
 run-name: Commit Stage
 
 on:
