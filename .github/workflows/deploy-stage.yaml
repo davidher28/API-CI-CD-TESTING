@@ -1,10 +1,7 @@
 name: Deploy Stage
 run-name: Deploy Stage - ${{ github.ref }}
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 env:
   APP_NAME: hello-world
@@ -116,13 +113,13 @@ jobs:
         run: |
           export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
           export SELECTOR="app=${{ env.APP_NAME }}-green"
-          echo "SELECTOR=$SELECTOR" >> $GITHUB_OUTPUT
+          echo "selector=$SELECTOR" >> $GITHUB_OUTPUT
 
           oc delete all --selector="$SELECTOR"
           oc expose svc/${{ env.APP_NAME }} --port=${{ env.APP_PORT }} -n ${{ env.OPENSHIFT_NAMESPACE }}
 
           export ROUTE=$(oc get route -n ${{ env.OPENSHIFT_NAMESPACE }} -l $SELECTOR -o jsonpath='{.items[0].spec.host}')
-          echo "ROUTE=$ROUTE" >> $GITHUB_OUTPUT
+          echo "route=$ROUTE" >> $GITHUB_OUTPUT
 
       - name: View application route
         id: view_application_route
@@ -153,4 +150,4 @@ jobs:
           retry_wait_seconds: 10
           max_attempts: 30
           warning_on_retry: false
-          command: curl -sSfL ${{ needs.deployment.outputs.route }}
+          command: curl -sSfL ${{ needs.green-deployment.outputs.route }}
