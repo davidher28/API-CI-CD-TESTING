@@ -86,7 +86,7 @@ jobs:
     needs: publish
     name: Deploy Blue & Green Instances
     outputs:
-      route: ${{ steps.deploy-and-expose.outputs.route }}
+      route: ${{ steps.expose-app.outputs.route }}
     steps:
       - uses: actions/checkout@v4
 
