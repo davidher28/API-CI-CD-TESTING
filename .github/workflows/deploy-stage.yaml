@@ -84,7 +84,7 @@ jobs:
   deployment:
     runs-on: ubuntu-22.04
     needs: publish
-    name: Deploy Blue & Green Services
+    name: Deploy Blue & Green Instances
     steps:
       - uses: actions/checkout@v4
 
@@ -113,7 +113,7 @@ jobs:
 
           oc delete route ${{ env.APP_NAME }} --ignore-not-found=true
           oc expose svc/$GREEN_APP_NAME --name=${{ env.APP_NAME }}
-          oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":"$BLUE_APP_NAME"}}}'
+          oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":$BLUE_APP_NAME}}}'
 
   deployment_test:
     runs-on: ubuntu-22.04
