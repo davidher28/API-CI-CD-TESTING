@@ -1,6 +1,7 @@
 name: Commit Stage
 
 on:
+  workflow_call:
   push:
     branches:
       - '*'
