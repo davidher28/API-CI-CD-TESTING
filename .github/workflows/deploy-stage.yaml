@@ -94,10 +94,10 @@ jobs:
         id: deploy-and-expose
         run: |
           export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
-          export SELECTOR="app=${{ env.APP_NAME }}-blue"
+          export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
 
-          oc delete all --selector="$SELECTOR"
-          oc new-app --name="$SELECTOR" --docker-image="" -n ${{ env.OPENSHIFT_NAMESPACE }}
+          oc delete all --selector="app=$BLUE_APP_NAME"
+          oc new-app --name="$BLUE_APP_NAME" --docker-image="$IMAGE"
 
   green-deployment:
     runs-on: ubuntu-22.04
@@ -111,28 +111,21 @@ jobs:
       - name: Deploy and expose app
         id: deploy-and-expose
         run: |
-          export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
-          export SELECTOR="app=${{ env.APP_NAME }}-green"
-          echo "selector=$SELECTOR" >> $GITHUB_OUTPUT
+          export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.new_tag }}"
+          export GREE_APP_NAME="${{ env.APP_NAME }}-green"
 
-          oc delete all --selector="$SELECTOR"
-          oc expose svc/${{ env.APP_NAME }} --port=${{ env.APP_PORT }} -n ${{ env.OPENSHIFT_NAMESPACE }}
+          oc delete all --selector="app=$GREE_APP_NAME"
+          oc expose svc/$GREE_APP_NAME --port=${{ env.APP_PORT }}
 
-          export ROUTE=$(oc get route -n ${{ env.OPENSHIFT_NAMESPACE }} -l $SELECTOR -o jsonpath='{.items[0].spec.host}')
+          export ROUTE=$(oc get route -n ${{ env.OPENSHIFT_NAMESPACE }} -l app=$GREE_APP_NAME -o jsonpath='{.items[0].spec.host}')
           echo "route=$ROUTE" >> $GITHUB_OUTPUT
 
-      - name: View application route
-        id: view_application_route
-        env:
-          ROUTE: ${{ steps.deploy-and-expose.outputs.route }}
-          SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
+      - name: Display application route
+        id: display-route
         run: |
-          [[ -n ${{ env.ROUTE }} ]] || (echo "Determining application route failed in previous step"; exit 1)
           echo "======================== The application is available at: ========================"
-          echo ${{ env.ROUTE }}
+          echo ${{ steps.deploy-and-expose.outputs.route }}
           echo "==================================================================================="
-          echo
-          echo "It can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
 
   deployment_test:
     runs-on: ubuntu-22.04
