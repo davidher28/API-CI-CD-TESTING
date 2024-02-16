@@ -12,11 +12,12 @@ env:
   OPENSHIFT_NAMESPACE: davidher28-dev
 
 jobs:
+  # ------------------------------- Commit Stage ------------------------------- #
   commit_stage:
-    # ------------------------------- Commit Stage ------------------------------- #
     name: Commit Stage
     uses: ./.github/workflows/commit-stage.yaml
 
+  # ------------------------------- Integration Tests ------------------------------- #
   integration_test:
     runs-on: ubuntu-22.04
     needs: commit_stage
@@ -24,7 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ------------------------------- Integration Tests ------------------------------- #
       - name: Restore cache from the build stage
         id: restore-cache
         uses: actions/cache/restore@v4
@@ -42,16 +42,17 @@ jobs:
       - name: Integration Testing with pytest
         run: pytest app/tests/integration/
 
+  # ------------------------------- Container Versioning ------------------------------- #
   publish:
     runs-on: ubuntu-22.04
     needs: integration_test
-    name: Publish and Deploy
+    name: Publish Container
     outputs:
-      route: ${{ steps.deploy-and-expose.outputs.route }}
+      old_tag: ${{ steps.tagging.outputs.tag }}
+      new_tag: ${{ steps.tagging.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v4
 
-      # ------------------------------- Application Versioning ------------------------------- #
       - name: Bump Application Version and Push Tag
         id: tagging
         uses: anothrNick/github-tag-action@1.64.0
@@ -60,7 +61,6 @@ jobs:
           WITH_V: true
           DRY_RUN: true
 
-      # ------------------------------- Docker Build and Push ------------------------------- #
       - name: Login to Docker Hub
         id: docker_login
         uses: docker/login-action@v3
@@ -83,7 +83,16 @@ jobs:
       - name: Docker Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-      # ------------------------------- Red Hat OpenShift Deployment ------------------------------- #
+  # ------------------------------- Red Hat OpenShift Deployment ------------------------------- #
+  deployment:
+    runs-on: ubuntu-22.04
+    needs: publish
+    name: Deploy Container
+    outputs:
+      route: ${{ steps.deploy-and-expose.outputs.route }}
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Log in to OpenShift
         id: oc_login
         uses: redhat-actions/oc-login@v1
@@ -97,10 +106,10 @@ jobs:
         uses: redhat-actions/oc-new-app@v1
         env:
           IMAGE_REPOSITORY: ${{ vars.DOCKERHUB_USERNAME }}
-          IMAGE_TAG: ${{ steps.tagging.outputs.new_tag }}
+          IMAGE_TAG: ${{ neds.publish.outputs.new_tag }}
         with:
           app_name: ${{ env.APP_NAME }}
-          image: docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ steps.tagging.outputs.new_tag }}
+          image: docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ need.publish.outputs.new_tag }}
           namespace: ${{ env.OPENSHIFT_NAMESPACE }}
           port: ${{ env.APP_PORT }}
 
@@ -119,7 +128,7 @@ jobs:
 
   deployment_test:
     runs-on: ubuntu-22.04
-    needs: publish
+    needs: deployment
     name: Deployment Test
     steps:
       - uses: actions/checkout@v4
@@ -133,4 +142,4 @@ jobs:
           retry_wait_seconds: 10
           max_attempts: 30
           warning_on_retry: false
-          command: curl -sSfL ${{ needs.publish.outputs.route }}
+          command: curl -sSfL ${{ needs.deployment.outputs.route }}
