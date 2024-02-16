@@ -6,6 +6,7 @@ on:
     branches:
       - '*'
       - '!main'
+  # Allow reusability of the workflow when merging pull requests
   workflow_call:
 
 concurrency:

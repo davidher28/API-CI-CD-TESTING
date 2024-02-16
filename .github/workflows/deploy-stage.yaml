@@ -41,7 +41,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Integration Tests with pytest
+      - name: Integration Testing with pytest
         run: pytest app/tests/integration/
 
   publish:
