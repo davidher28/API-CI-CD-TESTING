@@ -68,7 +68,7 @@ jobs:
 
       - name: Push To Docker Hub
         id: push-to-docker
-        uses: redhat-actions/push-to-registry@v2
+        uses: redhat-actions/push-to-registry@v2.7.1
         with:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
@@ -91,7 +91,7 @@ jobs:
 
       - name: Log in to OpenShift
         id: oc_login
-        uses: redhat-actions/oc-login@v1
+        uses: redhat-actions/oc-login@v1.2
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
