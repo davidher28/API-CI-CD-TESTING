@@ -123,7 +123,7 @@ jobs:
           set +x
 
           export ROUTE="$(oc get route $GREEN_APP_NAME -o jsonpath='{.spec.host}')"
-          echo "route=$ROUTE" >> $GITHUB_OUTPUT
+          echo "route=$ROUTE" >> "$GITHUB_OUTPUT"
 
   deployment_test:
     runs-on: ubuntu-22.04
