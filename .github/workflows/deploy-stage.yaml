@@ -2,11 +2,9 @@ name: Deploy Stage
 run-name: Deploy Stage - ${{ github.ref }}
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types:
-      - closed
 
 env:
   APP_NAME: hello-world
