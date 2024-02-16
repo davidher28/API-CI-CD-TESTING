@@ -100,8 +100,8 @@ jobs:
         id: deploy-and-expose
         run: |
           export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi"
-          export PREVIOUS_IMAGE="$IMAGE:${{ needs.publish.outputs.old_tag }}"
-          export CURRENT_IMAGE="$IMAGE:{{ needs.publish.outputs.new_tag }}"
+          export PREVIOUS_IMAGE="$IMAGE:"${{ needs.publish.outputs.old_tag }}
+          export CURRENT_IMAGE="$IMAGE:"{{ needs.publish.outputs.new_tag }}
 
           export GREEN_APP_NAME="${{ env.APP_NAME }}-green"
           export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
