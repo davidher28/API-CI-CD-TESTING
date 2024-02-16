@@ -153,7 +153,7 @@ jobs:
 
   deployment_test:
     runs-on: ubuntu-22.04
-    needs: deployment
+    needs: green-deployment
     name: Deployment Test
     steps:
       - uses: actions/checkout@v4
