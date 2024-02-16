@@ -60,13 +60,13 @@ jobs:
 
       - name: Buildah Action
         id: build-image
-        uses: redhat-actions/buildah-build@v2
+        uses: redhat-actions/buildah-build@v2.12
         with:
           image: ${{ vars.DOCKERHUB_USERNAME }}/fastapi
           tags: ${{ steps.tagging.outputs.new_tag }}
           containerfiles: ./docker/Dockerfile
 
-      - name: Push To docker.io
+      - name: Push To Docker Hub
         id: push-to-docker
         uses: redhat-actions/push-to-registry@v2
         with:
