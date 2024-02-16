@@ -109,7 +109,7 @@ jobs:
           IMAGE_TAG: ${{ needs.publish.outputs.new_tag }}
         with:
           app_name: ${{ env.APP_NAME }}
-          image: docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ need.publish.outputs.new_tag }}
+          image: docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.new_tag }}
           namespace: ${{ env.OPENSHIFT_NAMESPACE }}
           port: ${{ env.APP_PORT }}
 
