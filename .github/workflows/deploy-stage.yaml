@@ -86,6 +86,8 @@ jobs:
     runs-on: ubuntu-22.04
     needs: publish
     name: Deploy Blue & Green Instances
+    outputs:
+      route: ${{ steps.deploy-and-expose.outputs.route }}
     steps:
       - uses: actions/checkout@v4
 
@@ -128,6 +130,10 @@ jobs:
           oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":"'"${GREEN_APP_NAME}"'"}}}'
           set +x
 
+          # Save the route to the output
+          export ROUTE="$(oc get route ${{ env.APP_NAME }} -o jsonpath='{.spec.host}')"
+          echo "route=$ROUTE" >> "$GITHUB_OUTPUT"
+
   deployment_test:
     runs-on: ubuntu-22.04
     needs: deployment
@@ -144,4 +150,4 @@ jobs:
           retry_wait_seconds: 10
           max_attempts: 30
           warning_on_retry: false
-          command: curl -sSfL $(oc get route ${{ env.APP_NAME }} -o jsonpath='{.spec.host}')
+          command: curl -sSfL ${{ needs.deployment.outputs.route }}
