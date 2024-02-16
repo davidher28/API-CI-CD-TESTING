@@ -62,9 +62,9 @@ jobs:
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-        image: ${{ vars.DOCKERHUB_USERNAME }}/fastapi
-        tags: ${{ steps.tagging.outputs.new_tag }}
-        containerfiles: ./Dockerfile
+          image: ${{ vars.DOCKERHUB_USERNAME }}/fastapi
+          tags: ${{ steps.tagging.outputs.new_tag }}
+          containerfiles: ./Dockerfile
 
       - name: Push To docker.io
         id: push-to-docker
