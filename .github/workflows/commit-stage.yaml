@@ -1,5 +1,5 @@
 name: Commit Stage
-run-name: Commit Stage ${{ github.sha }}
+run-name: Commit Stage ${{ github.sha::7 }}
 
 on:
   push:
