@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Bump Application Version and Push Tag
+      - name: Bump Application Version
         id: tagging
         uses: anothrNick/github-tag-action@1.64.0
         env:
@@ -80,56 +80,44 @@ jobs:
       - name: Docker Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-  # ------------------------------- Red Hat OpenShift Green Deployment ------------------------------- #
-  blue-deployment:
+  # ------------------------------- Red Hat OpenShift Blue/Green Deployment ------------------------------- #
+  deployment:
     runs-on: ubuntu-22.04
     needs: publish
     name: Deploy Blue Container
-    outputs:
-      route: ${{ steps.deploy-and-expose.outputs.route }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy and expose app
-        id: deploy-and-expose
-        run: |
-          export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.old_tag }}"
-          export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
-
-          oc delete all --selector="app=$BLUE_APP_NAME"
-          oc new-app --name="$BLUE_APP_NAME" --docker-image="$IMAGE"
-
-  green-deployment:
-    runs-on: ubuntu-22.04
-    needs: publish
-    name: Deploy Green Container
-    outputs:
-      route: ${{ steps.deploy-and-expose.outputs.route }}
-    steps:
-      - uses: actions/checkout@v4
+      - name: Log in to OpenShift
+        id: oc_login
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
 
       - name: Deploy and expose app
         id: deploy-and-expose
         run: |
           export IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ needs.publish.outputs.new_tag }}"
-          export GREE_APP_NAME="${{ env.APP_NAME }}-green"
+          export PREVIOUS_IMAGE="$IMAGE/${{ needs.publish.outputs.old_tag }}"
+          export CURRENT_IMAGE="$IMAGE/{{ needs.publish.outputs.new_tag }}"
 
-          oc delete all --selector="app=$GREE_APP_NAME"
-          oc expose svc/$GREE_APP_NAME --port=${{ env.APP_PORT }}
+          export GREEN_APP_NAME="${{ env.APP_NAME }}-green"
+          export BLUE_APP_NAME="${{ env.APP_NAME }}-blue"
 
-          export ROUTE=$(oc get route -n ${{ env.OPENSHIFT_NAMESPACE }} -l app=$GREE_APP_NAME -o jsonpath='{.items[0].spec.host}')
-          echo "route=$ROUTE" >> $GITHUB_OUTPUT
+          oc delete all --selector="app=$GREEN_APP_NAME"
+          oc new-app "$PREVIOUS_IMAGE" --name="$GREEN_APP_NAME"
 
-      - name: Display application route
-        id: display-route
-        run: |
-          echo "======================== The application is available at: ========================"
-          echo ${{ steps.deploy-and-expose.outputs.route }}
-          echo "==================================================================================="
+          oc delete all --selector="app=$BLUE_APP_NAME"
+          oc new-app "$CURRENT_IMAGE" --name="$BLUE_APP_NAME"
+
+          oc expose svc/$GREEN_APP_NAME --name=${{ env.APP_NAME }}
+          oc patch route/${{ env.APP_NAME }} -p '{"spec":{"to":{"name":"$BLUE_APP_NAME"}}}'
 
   deployment_test:
     runs-on: ubuntu-22.04
-    needs: green-deployment
+    needs: deployment
     name: Deployment Test
     steps:
       - uses: actions/checkout@v4
@@ -143,4 +131,4 @@ jobs:
           retry_wait_seconds: 10
           max_attempts: 30
           warning_on_retry: false
-          command: curl -sSfL ${{ needs.green-deployment.outputs.route }}
+          command: curl -sSfL ${{ needs.deployment.outputs.route }}
