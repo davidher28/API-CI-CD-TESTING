@@ -1,4 +1,5 @@
 name: Deploy Stage
+run-name: Deploy Stage - ${{ github.ref_name }}
 
 on:
   pull_request:
@@ -40,7 +41,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Integration Tests with pytest
+      - name: Integration Testing with pytest
         run: pytest app/tests/integration/
 
   publish:
@@ -75,7 +76,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/fastapi:${{ steps.tagging.outputs.new_tag }}
 
       - name: Docker Image digest

@@ -1,19 +1,22 @@
 name: Commit Stage
+run-name: Commit Stage - ${{ github.ref_name }}
 
 on:
   push:
     branches:
       - '*'
       - '!main'
+  # Allow reusability of the workflow when merging pull requests
   workflow_call:
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+    name: Build Application
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +47,7 @@ jobs:
   test:
     runs-on: ubuntu-22.04
     needs: build
+    name: Unit Test
     steps:
       - uses: actions/checkout@v4
 
@@ -69,6 +73,7 @@ jobs:
   analyze:
     runs-on: ubuntu-22.04
     needs: build
+    name: Static Analysis
     steps:
       - uses: actions/checkout@v4
 
